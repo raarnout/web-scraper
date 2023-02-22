@@ -17,7 +17,7 @@ const SELECTORS = {
 };
 
 const app = express();
-// app.listen(PORT, () => console.log(`server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 
 let $html;
 
