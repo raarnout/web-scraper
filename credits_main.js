@@ -25,7 +25,9 @@ app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 let $html;
 
 const init = async () => {
-  const response = await fetch("https://www.imdb.com/name/nm3369474/");
+  const response = await fetch(
+    `https://www.imdb.com/name/${process.env.IMDB_PERSON_ID}/`
+  );
   const html = await response.text();
 
   $html = cheerio.load(html);
