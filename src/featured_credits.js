@@ -1,9 +1,15 @@
 import express from "express";
+import scrapePage from "./utils/page-scraper.js";
 import * as cheerio from "cheerio";
+import * as dotenv from "dotenv";
+
 import { getMaxImage } from "./utils/image.js";
+import { writeJson } from "./utils/file-system.js";
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
+dotenv.config();
+const PERSON_ID = process.env.PERSON;
 const URL = `${DOMAIN}/name/${PERSON_ID}/fullcredits`;
 
 const LIST_CARD = ".ipc-primary-image-list-card__";
@@ -25,10 +31,7 @@ app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 let $html;
 
 const init = async () => {
-  const response = await fetch(`https://www.imdb.com/name/${PERSON_ID}/`);
-  const html = await response.text();
-
-  $html = cheerio.load(html);
+  $html = await scrapePage(`https://www.imdb.com/name/${PERSON_ID}/`);
 
   const person = $html(SELECTORS.NAME).text();
   const featured = featuredProjects();
@@ -39,7 +42,7 @@ const init = async () => {
     featured,
   };
 
-  console.log(JSON.stringify(data));
+  writeJson(data, "featured_credits");
 };
 
 const featuredProjects = () => {

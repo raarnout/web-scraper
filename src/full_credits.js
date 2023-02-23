@@ -1,6 +1,8 @@
 import express from "express";
+import scrapePage from "./utils/page-scraper.js";
 import * as cheerio from "cheerio";
 import * as dotenv from "dotenv";
+import { writeJson } from "./utils/file-system.js";
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
@@ -22,20 +24,18 @@ app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 
 let $html;
 const init = async () => {
-  const response = await fetch(
+  $html = await scrapePage(
     `https://www.imdb.com/name/${PERSON_ID}/fullcredits`
   );
-  const html = await response.text();
-
-  $html = cheerio.load(html);
 
   const data = {
+    domain: DOMAIN,
     personId: PERSON_ID,
     person: $html(SELECTORS.PERSON).text(),
     professions: getProfessions(),
   };
 
-  console.log(JSON.stringify(data));
+  writeJson(data, "fullcredits");
 };
 
 const getProfessions = () => {
@@ -59,11 +59,10 @@ const getprojects = (categoryId) => {
   const $categoryContent = $html(selector).next().children();
 
   const filmData = [];
-
   $categoryContent.each((index, element) => {
     const id = `#${element.attribs["id"]}`;
     const title = $html(`${id} ${SELECTORS.FILM_NAME}`).text();
-    const link = DOMAIN + $html(`${id} ${SELECTORS.FILM_NAME}`).attr("href");
+    const link = $html(`${id} ${SELECTORS.FILM_NAME}`).attr("href");
     const year = $html(`${id} ${SELECTORS.FILM_YEAR}`).text().trim();
     const episodes = getEpisodes(id);
     filmData.push({ id, title, year, link, episodes });
@@ -88,13 +87,13 @@ const getEpisodes = (projectId) => {
       ? innerText.match(parseProfession)[1]
       : "";
 
-    const link = `${DOMAIN}${$html("a", element).attr("href")}`;
+    const link = `${$html("a", element).attr("href")}`;
 
     episodeData.push({
       title,
+      link,
       year,
       profession,
-      link,
     });
   });
 
