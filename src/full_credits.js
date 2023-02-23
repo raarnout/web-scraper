@@ -1,7 +1,6 @@
 import express from "express";
 import * as cheerio from "cheerio";
 import * as dotenv from "dotenv";
-import axios from "axios";
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
@@ -22,19 +21,6 @@ const app = express();
 app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 
 let $html;
-// axios(URL).then((response) => {
-//   const html = response.data;
-//   $html = cheerio.load(html);
-
-//   const data = {
-//     personId: PERSON_ID,
-//     person: $html(SELECTORS.PERSON).text(),
-//     professions: getProfessions(),
-//   };
-
-//   console.log(JSON.stringify(data));
-// });
-
 const init = async () => {
   const response = await fetch(
     `https://www.imdb.com/name/${PERSON_ID}/fullcredits`
