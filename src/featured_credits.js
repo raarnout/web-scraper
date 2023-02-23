@@ -1,6 +1,5 @@
 import express from "express";
 import scrapePage from "./utils/page-scraper.js";
-import * as cheerio from "cheerio";
 import * as dotenv from "dotenv";
 
 import { getMaxImage } from "./utils/image.js";
@@ -34,7 +33,7 @@ const init = async () => {
   $html = await scrapePage(`https://www.imdb.com/name/${PERSON_ID}/`);
 
   const person = $html(SELECTORS.NAME).text();
-  const featured = featuredProjects();
+  const featured = await featuredProjects();
 
   const data = {
     personId: PERSON_ID,
@@ -45,11 +44,14 @@ const init = async () => {
   writeJson(data, "featured_credits");
 };
 
-const featuredProjects = () => {
+const featuredProjects = async () => {
   const data = [];
-  $html(SELECTORS.FEATURED.CONTAINER).each((index, element) => {
+  const elements = $html(SELECTORS.FEATURED.CONTAINER);
+
+  for (const element of elements) {
     const title = $html(SELECTORS.FEATURED.TITLE, element).text().trim();
     const link = DOMAIN + $html(SELECTORS.FEATURED.TITLE, element).attr("href");
+    const poster = await getPosterUrl(link);
     const profession = $html(SELECTORS.FEATURED.JOB_TITLE, element).text();
     const year = $html(SELECTORS.FEATURED.YEAR, element).text();
     const image = getMaxImage(
@@ -59,12 +61,20 @@ const featuredProjects = () => {
     data.push({
       title,
       link,
+      poster,
       profession,
       year,
       image,
     });
-  });
+  }
   return data;
+};
+
+const getPosterUrl = async (link) => {
+  $html = await scrapePage(link);
+  const srcSet = $html('[data-testid="hero-media__poster"] img').attr("srcset");
+  const posterUrl = getMaxImage(srcSet);
+  return posterUrl;
 };
 
 init();

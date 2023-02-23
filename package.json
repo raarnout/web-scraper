@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start": "nodemon --config nodemon.json src/index.js",
     "full": "nodemon -x 'clear;printf \"\\e[3J\";node' --ignore ./dist/ src/full_credits.js",
     "featured": "nodemon -x 'clear;printf \"\\e[3J\";node' --ignore ./dist/ src/featured_credits.js"
   },

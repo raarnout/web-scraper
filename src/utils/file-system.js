@@ -7,7 +7,7 @@ const writeJson = (data, filename) => {
       console.log(error);
     } else {
       console.log(
-        `${json} \n ${filename}.json has been saved successfully in the 'dist' folder`
+        `${filename}.json has been saved successfully in the 'dist' folder`
       );
     }
   });
