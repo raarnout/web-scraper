@@ -1,12 +1,9 @@
 import express from "express";
 import * as cheerio from "cheerio";
-import * as dotenv from "dotenv";
 import { getMaxImage } from "./utils/image.js";
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
-dotenv.config();
-const PERSON_ID = process.env.PERSON;
 const URL = `${DOMAIN}/name/${PERSON_ID}/fullcredits`;
 
 const LIST_CARD = ".ipc-primary-image-list-card__";
