@@ -22,9 +22,25 @@ const app = express();
 app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 
 let $html;
-console.log(URL);
-axios(URL).then((response) => {
-  const html = response.data;
+// axios(URL).then((response) => {
+//   const html = response.data;
+//   $html = cheerio.load(html);
+
+//   const data = {
+//     personId: PERSON_ID,
+//     person: $html(SELECTORS.PERSON).text(),
+//     professions: getProfessions(),
+//   };
+
+//   console.log(JSON.stringify(data));
+// });
+
+const init = async () => {
+  const response = await fetch(
+    `https://www.imdb.com/name/${PERSON_ID}/fullcredits`
+  );
+  const html = await response.text();
+
   $html = cheerio.load(html);
 
   const data = {
@@ -34,7 +50,7 @@ axios(URL).then((response) => {
   };
 
   console.log(JSON.stringify(data));
-});
+};
 
 const getProfessions = () => {
   const categories = [];
@@ -98,3 +114,5 @@ const getEpisodes = (projectId) => {
 
   return episodeData;
 };
+
+init();
