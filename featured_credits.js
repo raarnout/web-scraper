@@ -4,7 +4,8 @@ const express = require("express");
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
-const URL = `${DOMAIN}/name/${process.env.IMDB_PERSON_ID}`;
+const PERSON_ID = process.env.IMDB_PERSON_ID;
+const URL = `${DOMAIN}/name/${PERSON_ID}`;
 
 const LIST_CARD = ".ipc-primary-image-list-card__";
 
@@ -32,15 +33,16 @@ const init = async () => {
 
   $html = cheerio.load(html);
 
-  const name = $html(SELECTORS.NAME).text();
+  const person = $html(SELECTORS.NAME).text();
   const featured = featuredProjects();
 
   const data = {
-    name,
+    personId: PERSON_ID,
+    person,
     featured,
   };
 
-  console.log(data);
+  console.log(JSON.stringify(data));
 };
 
 const featuredProjects = () => {
@@ -48,7 +50,7 @@ const featuredProjects = () => {
   $html(SELECTORS.FEATURED.CONTAINER).each((index, element) => {
     const title = $html(SELECTORS.FEATURED.TITLE, element).text().trim();
     const link = DOMAIN + $html(SELECTORS.FEATURED.TITLE, element).attr("href");
-    const jobTitle = $html(SELECTORS.FEATURED.JOB_TITLE, element).text();
+    const profession = $html(SELECTORS.FEATURED.JOB_TITLE, element).text();
     const year = $html(SELECTORS.FEATURED.YEAR, element).text();
     const image = getMaxImageUrl(
       $html(SELECTORS.FEATURED.IMAGE, element).attr("srcset")
@@ -57,7 +59,7 @@ const featuredProjects = () => {
     data.push({
       title,
       link,
-      jobTitle,
+      profession,
       year,
       image,
     });

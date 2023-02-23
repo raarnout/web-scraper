@@ -5,10 +5,11 @@ const express = require("express");
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
-const URL = `${DOMAIN}/name/${process.env.IMDB_PERSON_ID}/fullcredits`;
+const PERSON_ID = process.env.IMDB_PERSON_ID;
+const URL = `${DOMAIN}/name/${PERSON_ID}/fullcredits`;
 
 const SELECTORS = {
-  NAME: "#main .subpage_title_block.name-subpage-header-block a",
+  PERSON: "#main .subpage_title_block.name-subpage-header-block a",
   HEAD_CATEGORIES: "div.head",
   ATTR_DATA_CATEGORY: "data-category",
   FILM_NAME: "> b > a",
@@ -26,23 +27,24 @@ axios(URL).then((response) => {
   $html = cheerio.load(html);
 
   const data = {
-    name: $html(SELECTORS.NAME).text(),
-    jobs: getJobs(),
+    personId: PERSON_ID,
+    person: $html(SELECTORS.PERSON).text(),
+    professions: getProfessions(),
   };
 
   console.log(JSON.stringify(data));
 });
 
-const getJobs = () => {
+const getProfessions = () => {
   const categories = [];
   $html(SELECTORS.HEAD_CATEGORIES).each((index, element) => {
-    const jobId = element.attribs[SELECTORS.ATTR_DATA_CATEGORY];
-    const functionTitle = $html(`a[name="${jobId}"]`).text().trim();
-    const projects = getprojects(jobId);
+    const professionId = element.attribs[SELECTORS.ATTR_DATA_CATEGORY];
+    const professionTitle = $html(`a[name="${professionId}"]`).text().trim();
+    const projects = getprojects(professionId);
 
     categories.push({
-      jobId,
-      functionTitle,
+      professionId,
+      professionTitle,
       projects,
     });
   });
@@ -60,8 +62,8 @@ const getprojects = (categoryId) => {
     const title = $html(`${id} ${SELECTORS.FILM_NAME}`).text();
     const link = DOMAIN + $html(`${id} ${SELECTORS.FILM_NAME}`).attr("href");
     const year = $html(`${id} ${SELECTORS.FILM_YEAR}`).text().trim();
-    const Episodes = getEpisodes(id);
-    filmData.push({ id, title, year, link, Episodes });
+    const episodes = getEpisodes(id);
+    filmData.push({ id, title, year, link, episodes });
   });
   return filmData;
 };
@@ -70,7 +72,7 @@ const getEpisodes = (projectId) => {
   const selector = `${projectId} ${SELECTORS.FILM_EPISODES}`;
   const $episodeContent = $html(selector);
   const parseYear = new RegExp(/\b\d{4}\b/);
-  const parseRole = new RegExp(/\(([^()]*[a-zA-Z])\)/);
+  const parseProfession = new RegExp(/\(([^()]*[a-zA-Z])\)/);
 
   const episodeData = [];
 
@@ -79,14 +81,16 @@ const getEpisodes = (projectId) => {
 
     const innerText = $html(element).text();
     const year = parseYear.test(innerText) ? innerText.match(parseYear)[0] : "";
-    const role = parseRole.test(innerText) ? innerText.match(parseRole)[1] : "";
+    const profession = parseProfession.test(innerText)
+      ? innerText.match(parseProfession)[1]
+      : "";
 
     const link = `${DOMAIN}${$html("a", element).attr("href")}`;
 
     episodeData.push({
       title,
       year,
-      role,
+      profession,
       link,
     });
   });

@@ -4,8 +4,8 @@
   "description": "node.js web scraper tool",
   "main": "index.js",
   "scripts": {
-    "main": "nodemon -x 'clear;printf \"\\e[3J\";node' credits_main.js",
-    "textonly": "nodemon -x 'clear;printf \"\\e[3J\";node' credits_text_only.js"
+    "full": "nodemon -x 'clear;printf \"\\e[3J\";node' full_credits.js",
+    "featured": "nodemon -x 'clear;printf \"\\e[3J\";node' featured_credits.js"
   },
   "repository": {
     "type": "git",
