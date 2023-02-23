@@ -1,6 +1,5 @@
 import express from "express";
 import scrapePage from "./utils/page-scraper.js";
-import * as cheerio from "cheerio";
 import * as dotenv from "dotenv";
 import { writeJson } from "./utils/file-system.js";
 
