@@ -1,11 +1,12 @@
-require("dotenv").config();
-const axios = require("axios");
-const cheerio = require("cheerio");
-const express = require("express");
+import express from "express";
+import * as cheerio from "cheerio";
+import * as dotenv from "dotenv";
+import axios from "axios";
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
-const PERSON_ID = process.env.IMDB_PERSON_ID;
+dotenv.config();
+const PERSON_ID = process.env.PERSON;
 const URL = `${DOMAIN}/name/${PERSON_ID}/fullcredits`;
 
 const SELECTORS = {
@@ -21,7 +22,7 @@ const app = express();
 app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 
 let $html;
-
+console.log(URL);
 axios(URL).then((response) => {
   const html = response.data;
   $html = cheerio.load(html);

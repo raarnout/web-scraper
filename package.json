@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "node.js web scraper tool",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "full": "nodemon -x 'clear;printf \"\\e[3J\";node' full_credits.js",
-    "featured": "nodemon -x 'clear;printf \"\\e[3J\";node' featured_credits.js"
+    "full": "nodemon -x 'clear;printf \"\\e[3J\";node' src/full_credits.js",
+    "featured": "nodemon -x 'clear;printf \"\\e[3J\";node' src/featured_credits.js"
   },
   "repository": {
     "type": "git",

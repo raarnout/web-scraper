@@ -1,16 +1,18 @@
-require("dotenv").config();
-const cheerio = require("cheerio");
-const express = require("express");
+import express from "express";
+import * as cheerio from "cheerio";
+import * as dotenv from "dotenv";
+import { getMaxImage } from "./utils/image.js";
 
 const PORT = 8000;
 const DOMAIN = "https://www.imdb.com";
-const PERSON_ID = process.env.IMDB_PERSON_ID;
-const URL = `${DOMAIN}/name/${PERSON_ID}`;
+dotenv.config();
+const PERSON_ID = process.env.PERSON;
+const URL = `${DOMAIN}/name/${PERSON_ID}/fullcredits`;
 
 const LIST_CARD = ".ipc-primary-image-list-card__";
 
 const SELECTORS = {
-  NAME: "h1 span",
+  NAME: '[data-testid="hero__pageTitle"] span',
   FEATURED: {
     CONTAINER: ".ipc-list-card--span",
     TITLE: `${LIST_CARD}title`,
@@ -26,9 +28,7 @@ app.listen(PORT, () => console.log(`server running on port ${PORT}`));
 let $html;
 
 const init = async () => {
-  const response = await fetch(
-    `https://www.imdb.com/name/${process.env.IMDB_PERSON_ID}/`
-  );
+  const response = await fetch(`https://www.imdb.com/name/${PERSON_ID}/`);
   const html = await response.text();
 
   $html = cheerio.load(html);
@@ -52,7 +52,7 @@ const featuredProjects = () => {
     const link = DOMAIN + $html(SELECTORS.FEATURED.TITLE, element).attr("href");
     const profession = $html(SELECTORS.FEATURED.JOB_TITLE, element).text();
     const year = $html(SELECTORS.FEATURED.YEAR, element).text();
-    const image = getMaxImageUrl(
+    const image = getMaxImage(
       $html(SELECTORS.FEATURED.IMAGE, element).attr("srcset")
     );
 
@@ -65,25 +65,6 @@ const featuredProjects = () => {
     });
   });
   return data;
-};
-
-const getMaxImageUrl = (srcset) => {
-  let regex = /(?:^|\s)(\S+)\s+(\d+)[wx](?:,|$)/g;
-  let match;
-  let maxImage;
-  let maxWidth = 0;
-
-  while ((match = regex.exec(srcset)) !== null) {
-    let url = match[1];
-    let width = parseInt(match[2]);
-
-    if (width > maxWidth) {
-      maxWidth = width;
-      maxImage = url;
-    }
-  }
-
-  return maxImage;
 };
 
 init();
