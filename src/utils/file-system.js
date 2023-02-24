@@ -1,8 +1,14 @@
 import * as fs from "fs";
 
-const writeJson = (data, filename) => {
+const writeJson = (username, data, filename) => {
   const json = JSON.stringify(data, null, 2);
-  fs.writeFile(`./dist/${filename}.json`, json, "utf8", (error) => {
+  const savePath = `./dist/${username}/`;
+  // Make sure the save directory exists
+  if (!fs.existsSync(savePath)) {
+    fs.mkdirSync(savePath, { recursive: true });
+  }
+
+  fs.writeFile(`${savePath}${filename}.json`, json, "utf8", (error) => {
     if (error) {
       console.log(error);
     } else {
