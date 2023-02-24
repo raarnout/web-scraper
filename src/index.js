@@ -4,9 +4,14 @@ import scrapePage from "./utils/page-scraper.js";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const ID = process.env.PERSON;
-const ENV = process.env.NODE_ENV;
 const DOMAIN = "https://www.imdb.com";
+const ID = process.env.PERSON;
+const NODE_ENV = process.env.NODE_ENV;
+const ENV = {
+  DEV: "dev",
+  PROD: "prod",
+};
+
 const SELECTORS = {
   USER_NAME: "#main .subpage_title_block.name-subpage-header-block a",
   PROFESSIONS: "div.head",
@@ -14,6 +19,7 @@ const SELECTORS = {
   FILM_TITLE: "> b > a",
   FILM_YEAR: ".year_column",
   POSTER: '[data-testid="hero-media__poster"] img',
+  POSTER_TITLE: '[data-testid="hero-title-block__title"]',
   FILM_EPISODES: ".filmo-episodes",
 };
 
@@ -39,12 +45,12 @@ const getProfessions = async () => {
   for (const element of elements) {
     const id = element.attribs[SELECTORS.DATA_CATEGORY];
     const profession = $html(`a[name="${id}"]`).text().trim();
-    const credits = await getFilms(id);
+    const films = await getFilms(id);
 
     professions.push({
       id,
       profession,
-      credits,
+      films,
     });
   }
 
@@ -62,7 +68,10 @@ const getFilms = async (id) => {
     const link = $html(project).find("b").find("a").attr("href");
     const id = parseId.test(link) ? link.match(parseId)[1] : "";
     const year = $html(project).find(".year_column").text().trim();
-    const poster = await getPosterUrl(`${DOMAIN}${link}`, "film");
+    const poster =
+      NODE_ENV !== ENV.PROD
+        ? "/url/for/film"
+        : await getPosterUrl(`${DOMAIN}${link}`, "film");
     const idForEpisodes = $html(project).attr("id");
     const episodes = await getEpisodes(idForEpisodes);
 
@@ -79,18 +88,12 @@ const getFilms = async (id) => {
 };
 
 const getEpisodes = async (filmId) => {
-  const startLog = filmId === "assistant_director-tt8180660";
-
   const parseId = new RegExp(/\/title\/(\w+)\//);
   const parseYear = new RegExp(/\b\d{4}\b/);
   const parseProfession = new RegExp(/\(([^()]*[a-zA-Z])\)/);
 
-  const selector = `#${filmId} ${SELECTORS.FILM_EPISODES}`;
+  let selector = `#${filmId} ${SELECTORS.FILM_EPISODES}`;
   const elements = $html(selector);
-
-  if (startLog) {
-    console.log(elements);
-  }
 
   const episodeData = [];
 
@@ -100,7 +103,10 @@ const getEpisodes = async (filmId) => {
     const id = parseId.test(link) ? link.match(parseId)[1] : "";
     const innerText = $html(element).text();
     const year = parseYear.test(innerText) ? innerText.match(parseYear)[0] : "";
-    const poster = await getPosterUrl(`${DOMAIN}${link}`, "episode");
+    const poster =
+      NODE_ENV !== ENV.PROD
+        ? "/url/for/episode"
+        : await getPosterUrl(`${DOMAIN}${link}`, "episode");
     const profession = parseProfession.test(innerText)
       ? innerText.match(parseProfession)[1]
       : "";
@@ -119,10 +125,11 @@ const getEpisodes = async (filmId) => {
 };
 
 const getPosterUrl = async (link, source) => {
-  console.log(`${source} ${link}`);
-  $html = await scrapePage(link);
-  const srcSet = $html(SELECTORS.POSTER).attr("srcset");
+  const $page = await scrapePage(link);
+  const srcSet = $page(SELECTORS.POSTER).attr("srcset");
+  const title = $page(SELECTORS.POSTER_TITLE).text();
   const posterUrl = getMaxImage(srcSet);
+  console.log(`scraped ${source}: ${title}`);
   return posterUrl;
 };
 
